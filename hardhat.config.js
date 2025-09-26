@@ -40,5 +40,15 @@ module.exports = {
       accounts: process.env.DEPLOYER_PRIVATE_KEY ? [process.env.DEPLOYER_PRIVATE_KEY] : [],
       chainId: 5920,
     },
+    arbitrum_sepolia: {
+      url: "https://sepolia-rollup.arbitrum.io/rpc",
+      accounts: process.env.DEPLOYER_PRIVATE_KEY ? [process.env.DEPLOYER_PRIVATE_KEY] : [],
+      chainId: 421614,
+    },
+    base_sepolia: {
+      url: "https://sepolia.base.org",
+      accounts: process.env.DEPLOYER_PRIVATE_KEY ? [process.env.DEPLOYER_PRIVATE_KEY] : [],
+      chainId: 84532,
+    },
   },
 };

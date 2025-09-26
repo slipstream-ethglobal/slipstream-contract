@@ -7,7 +7,11 @@
     "test": "hardhat test",
     "compile": "hardhat compile",
     "deploy": "hardhat compile && hardhat run scripts/deploy.js --chainweb testnet",
-    "deploy-kadena": "hardhat run scripts/deploy.js --network kadena_testnet"
+    "deploy-kadena": "hardhat run scripts/deploy-slipstream.js --network kadena_testnet",
+    "deploy-arbitrum": "hardhat run scripts/deploy-arbitrum-sepolia.js --network arbitrum_sepolia",
+    "deploy-base": "hardhat run scripts/deploy-base-sepolia.js --network base_sepolia",
+    "deploy-all": "node scripts/deploy-all-chains.js",
+    "deploy-slipstream-kadena": "hardhat run scripts/deploy-slipstream.js --network kadena_testnet"
   },
   "keywords": [],
   "author": "",
