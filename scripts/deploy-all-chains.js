@@ -1,4 +1,5 @@
-const hre = require("hardhat");
+const { spawn } = require('child_process');
+const fs = require('fs');
 
 // Token addresses for each chain
 const CHAIN_CONFIGS = {
@@ -39,54 +40,74 @@ const CHAIN_CONFIGS = {
 };
 
 async function deployToChain(networkName) {
-  console.log(`\n🚀 Deploying SlipstreamGaslessProxy to ${CHAIN_CONFIGS[networkName].name}...`);
-  
-  const [deployer] = await hre.ethers.getSigners();
-  console.log(`📝 Deploying with account: ${deployer.address}`);
-  
-  // Get balance
-  const balance = await deployer.provider.getBalance(deployer.address);
-  console.log(`💰 Account balance: ${hre.ethers.formatEther(balance)} ETH`);
-  
-  // Get the contract factory
-  const SlipstreamGaslessProxy = await hre.ethers.getContractFactory("SlipstreamGaslessProxy");
-  
-  const chainConfig = CHAIN_CONFIGS[networkName];
-  const supportedTokens = chainConfig.tokens.map(token => token.address);
-  
-  console.log(`🎯 Supported tokens for ${chainConfig.name}:`);
-  chainConfig.tokens.forEach(token => {
-    console.log(`   - ${token.name}: ${token.address}`);
+  return new Promise((resolve, reject) => {
+    console.log(`\n🚀 Deploying SlipstreamGaslessProxy to ${CHAIN_CONFIGS[networkName].name}...`);
+    
+    // Determine which script to use based on network
+    let scriptPath;
+    switch(networkName) {
+      case 'kadena_testnet':
+        scriptPath = 'scripts/deploy-slipstream.js';
+        break;
+      case 'arbitrum_sepolia':
+        scriptPath = 'scripts/deploy-arbitrum-sepolia.js';
+        break;
+      case 'base_sepolia':
+        scriptPath = 'scripts/deploy-base-sepolia.js';
+        break;
+      default:
+        return reject(new Error(`Unknown network: ${networkName}`));
+    }
+
+    // Run hardhat deployment command
+    const deployCommand = spawn('npx', [
+      'hardhat', 
+      'run', 
+      scriptPath, 
+      '--network', 
+      networkName
+    ], {
+      stdio: 'pipe',
+      cwd: process.cwd()
+    });
+
+    let stdout = '';
+    let stderr = '';
+
+    deployCommand.stdout.on('data', (data) => {
+      stdout += data.toString();
+      process.stdout.write(data); // Show real-time output
+    });
+
+    deployCommand.stderr.on('data', (data) => {
+      stderr += data.toString();
+      process.stderr.write(data); // Show real-time errors
+    });
+
+    deployCommand.on('close', (code) => {
+      if (code === 0) {
+        // Try to extract contract address from output
+        const addressMatch = stdout.match(/deployed to: (0x[a-fA-F0-9]{40})/);
+        const txHashMatch = stdout.match(/tx hash: (0x[a-fA-F0-9]{64})/);
+        
+        resolve({
+          network: networkName,
+          chainName: CHAIN_CONFIGS[networkName].name,
+          chainId: CHAIN_CONFIGS[networkName].chainId,
+          address: addressMatch ? addressMatch[1] : 'Address not found in output',
+          supportedTokens: CHAIN_CONFIGS[networkName].tokens,
+          txHash: txHashMatch ? txHashMatch[1] : 'Tx hash not found',
+          success: true
+        });
+      } else {
+        reject(new Error(`Deployment failed with exit code ${code}: ${stderr || stdout}`));
+      }
+    });
+
+    deployCommand.on('error', (error) => {
+      reject(new Error(`Failed to start deployment: ${error.message}`));
+    });
   });
-  
-  // Deploy the contract
-  const contract = await SlipstreamGaslessProxy.deploy(
-    deployer.address,      // contractOwnerAddress
-    [deployer.address],    // initialRelayerAddresses (deployer as initial relayer)
-    supportedTokens        // initialSupportedTokens
-  );
-  
-  await contract.waitForDeployment();
-  const contractAddress = await contract.getAddress();
-  
-  console.log(`✅ SlipstreamGaslessProxy deployed to: ${contractAddress}`);
-  console.log(`🔗 Chain: ${chainConfig.name} (Chain ID: ${chainConfig.chainId})`);
-  
-  // Get deployment transaction details
-  const deploymentTx = contract.deploymentTransaction();
-  if (deploymentTx) {
-    console.log(`📋 Deployment tx hash: ${deploymentTx.hash}`);
-    console.log(`⛽ Gas used: ${deploymentTx.gasLimit ? deploymentTx.gasLimit.toString() : 'N/A'}`);
-  }
-  
-  return {
-    network: networkName,
-    chainName: chainConfig.name,
-    chainId: chainConfig.chainId,
-    address: contractAddress,
-    supportedTokens: chainConfig.tokens,
-    txHash: deploymentTx?.hash
-  };
 }
 
 async function main() {
@@ -95,21 +116,22 @@ async function main() {
   
   const deployments = [];
   
-  // Deploy to each network
+  // Deploy to each network sequentially
   for (const networkName of Object.keys(CHAIN_CONFIGS)) {
     try {
-      // Switch to the network
-      hre.changeNetwork(networkName);
-      
       const deployment = await deployToChain(networkName);
       deployments.push(deployment);
+      
+      // Add a small delay between deployments
+      await new Promise(resolve => setTimeout(resolve, 2000));
       
     } catch (error) {
       console.error(`❌ Failed to deploy to ${networkName}:`, error.message);
       deployments.push({
         network: networkName,
         chainName: CHAIN_CONFIGS[networkName].name,
-        error: error.message
+        error: error.message,
+        success: false
       });
     }
   }
@@ -120,16 +142,33 @@ async function main() {
   
   deployments.forEach(deployment => {
     console.log(`\n🔸 ${deployment.chainName} (${deployment.network})`);
-    if (deployment.address) {
+    if (deployment.success && deployment.address) {
       console.log(`   ✅ Contract: ${deployment.address}`);
       console.log(`   🔗 Chain ID: ${deployment.chainId}`);
-      if (deployment.txHash) {
+      if (deployment.txHash && deployment.txHash !== 'Tx hash not found') {
         console.log(`   📋 Tx Hash: ${deployment.txHash}`);
       }
       console.log(`   🎯 Supported Tokens:`);
       deployment.supportedTokens.forEach(token => {
         console.log(`      - ${token.name}: ${token.address}`);
       });
+      
+      // Add explorer links
+      let explorerUrl = '';
+      switch(deployment.network) {
+        case 'kadena_testnet':
+          explorerUrl = `https://chain-20.evm-testnet-blockscout.chainweb.com/address/${deployment.address}`;
+          break;
+        case 'arbitrum_sepolia':
+          explorerUrl = `https://sepolia.arbiscan.io/address/${deployment.address}`;
+          break;
+        case 'base_sepolia':
+          explorerUrl = `https://sepolia.basescan.org/address/${deployment.address}`;
+          break;
+      }
+      if (explorerUrl) {
+        console.log(`   🔍 Explorer: ${explorerUrl}`);
+      }
     } else {
       console.log(`   ❌ Error: ${deployment.error}`);
     }
@@ -141,11 +180,20 @@ async function main() {
     deployments: deployments
   };
   
+  fs.writeFileSync('deployments.json', JSON.stringify(report, null, 2));
   console.log(`\n📁 Deployment report saved to deployments.json`);
-  require('fs').writeFileSync(
-    'deployments.json', 
-    JSON.stringify(report, null, 2)
-  );
+  
+  // Summary statistics
+  const successful = deployments.filter(d => d.success).length;
+  const failed = deployments.length - successful;
+  
+  console.log(`\n📈 DEPLOYMENT STATISTICS:`);
+  console.log(`   ✅ Successful: ${successful}/${deployments.length}`);
+  console.log(`   ❌ Failed: ${failed}/${deployments.length}`);
+  
+  if (successful > 0) {
+    console.log(`\n🎉 Successfully deployed to ${successful} network${successful > 1 ? 's' : ''}!`);
+  }
 }
 
 if (require.main === module) {
