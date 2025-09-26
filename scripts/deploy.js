@@ -8,8 +8,8 @@ async function main() {
   console.log("Deploying with account:", deployer.address);
 
   // Check the deployer's balance
-  const balance = await deployer.getBalance();
-  console.log("Deployer balance:", hre.ethers.utils.formatEther(balance), "KDA");
+  const balance = await deployer.provider.getBalance(deployer.address);
+  console.log("Deployer balance:", hre.ethers.formatEther(balance), "KDA");
 
   // Contract constructor parameters
   const tokenName = "Test USDC";
@@ -20,22 +20,25 @@ async function main() {
   const TestnetUSDC = await hre.ethers.getContractFactory("TestnetUSDC");
   const testUSDC = await TestnetUSDC.deploy(tokenName, tokenSymbol, tokenDecimals);
 
-  await testUSDC.deployed();
+  await testUSDC.waitForDeployment();
 
-  console.log("TestnetUSDC deployed to:", testUSDC.address);
+  console.log("TestnetUSDC deployed to:", await testUSDC.getAddress());
   console.log("Token Name:", tokenName);
   console.log("Token Symbol:", tokenSymbol);
   console.log("Token Decimals:", tokenDecimals);
 
   // Wait for a few confirmations before verification
   console.log("Waiting for block confirmations...");
-  await testUSDC.deployTransaction.wait(6);
+  await testUSDC.deploymentTransaction().wait(6);
+
+  // Get the contract address
+  const contractAddress = await testUSDC.getAddress();
 
   // Verify the contract on Blockscout
   try {
     console.log("Verifying contract...");
     await hre.run("verify:verify", {
-      address: testUSDC.address,
+      address: contractAddress,
       constructorArguments: [tokenName, tokenSymbol, tokenDecimals],
     });
     console.log("Contract verified successfully!");
@@ -46,14 +49,14 @@ async function main() {
   console.log(`
 Deployment Summary:
 ==================
-Contract Address: ${testUSDC.address}
+Contract Address: ${contractAddress}
 Token Name: ${tokenName}
 Token Symbol: ${tokenSymbol}
 Decimals: ${tokenDecimals}
 Initial Supply: 1,000,000 ${tokenSymbol}
 Deployer: ${deployer.address}
 Network: Kadena Chainweb EVM Testnet (Chain 20)
-Block Explorer: https://chain-20.evm-testnet-blockscout.chainweb.com/address/${testUSDC.address}
+Block Explorer: https://chain-20.evm-testnet-blockscout.chainweb.com/address/${contractAddress}
 `);
 }
 
