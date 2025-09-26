@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Permit.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/security/Pausable.sol";
+import "@openzeppelin/contracts/utils/Pausable.sol";
 
 /**
  * @title TestnetUSDC
@@ -24,7 +24,7 @@ contract TestnetUSDC is ERC20, ERC20Permit, Ownable, Pausable {
         string memory tokenName,
         string memory tokenSymbol,
         uint8 tokenDecimals
-    ) ERC20(tokenName, tokenSymbol) ERC20Permit(tokenName) {
+    ) ERC20(tokenName, tokenSymbol) ERC20Permit(tokenName) Ownable(msg.sender) {
         _decimals = tokenDecimals;
         // Mint initial supply to deployer for testing
         _mint(msg.sender, 1000000 * 10**tokenDecimals);
@@ -62,14 +62,14 @@ contract TestnetUSDC is ERC20, ERC20Permit, Ownable, Pausable {
     }
 
     // Hook to prevent transfers from/to blacklisted accounts
-    function _beforeTokenTransfer(
+    function _update(
         address from,
         address to,
         uint256 amount
     ) internal override whenNotPaused {
         require(!blacklisted[from], "TestnetUSDC: sender blacklisted");
         require(!blacklisted[to], "TestnetUSDC: recipient blacklisted");
-        super._beforeTokenTransfer(from, to, amount);
+        super._update(from, to, amount);
     }
 
     // Mint function - useful for testing
