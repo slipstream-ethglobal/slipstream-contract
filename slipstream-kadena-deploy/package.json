@@ -1,0 +1,27 @@
+{
+  "name": "slipstream-kadena-deploy",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "test": "hardhat test",
+    "node": "hardhat node",
+    "test-external": "hardhat test --chainweb=localhost",
+    "deploy:hardhat": "hardhat compile && npx hardhat run scripts/deploy-slipstream.js",
+    "deploy": "hardhat compile && npx hardhat run scripts/deploy-slipstream.js --chainweb"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@kadena/hardhat-chainweb": "^1.5.1",
+    "@nomicfoundation/hardhat-ethers": "^3.1.0",
+    "@nomicfoundation/hardhat-toolbox": "^6.1.0",
+    "@nomicfoundation/hardhat-verify": "^2.1.1",
+    "@openzeppelin/contracts": "^5.3.0",
+    "chai": "^4.2.0",
+    "ethers": "^6.14.4",
+    "hardhat": "^2.26.3",
+    "dotenv": "^17.2.2"
+  }
+}
