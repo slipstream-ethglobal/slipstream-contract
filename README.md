@@ -1,276 +1,208 @@
-# TestnetUSDC - Kadena Chainweb EVM Testnet
+# Slipstream Gasless Proxy Contracts
 
-A comprehensive ERC20 token implementation with USDC-like features, deployed on Kadena Chainweb EVM Testnet Chain 20.
+This repository contains the smart contracts for the Slipstream Gasless Proxy system, enabling gasless token transfers across multiple blockchain networks.
 
-## 📋 Contract Information
+## 🚀 Deployed Contracts
 
-- **Contract Address**: `0x7EDfA2193d4c2664C9e0128Ae25Ae5c9eC72D365`
-- **Network**: Kadena Chainweb EVM Testnet (Chain 20)
-- **Chain ID**: 20
-- **Token Name**: Test USDC
-- **Token Symbol**: TUSDC
+### Arbitrum Sepolia (Testnet)
+- **Contract Address**: `0xA6B0321Cc05672FF44F4E907A54465c0DEf74E77`
+- **Chain ID**: 421614
+- **Deployment Transaction**: [0x6f7e23baf8fa12967fceb3d7c1eb5ee9c36f3b92f47b50a20d65fe25b76e2472](https://sepolia.arbiscan.io/tx/0x6f7e23baf8fa12967fceb3d7c1eb5ee9c36f3b92f47b50a20d65fe25b76e2472)
+- **Block Explorer**: [Arbiscan](https://sepolia.arbiscan.io/address/0xA6B0321Cc05672FF44F4E907A54465c0DEf74E77)
+- **Gas Used**: 1,867,559
+
+### Kadena Testnet (Chain 20)
+- **Contract Address**: `0xDaDbcb45964551DD45c0917029CC21882d31EC3B`
+- **Chain ID**: 5920
+- **Block Explorer**: [Kadena Blockscout](https://chain-20.evm-testnet-blockscout.chainweb.com/address/0xDaDbcb45964551DD45c0917029CC21882d31EC3B)
+
+### TestnetUSDC Token Contract (Kadena)
+- **Token Address**: `0x7EDfA2193d4c2664C9e0128Ae25Ae5c9eC72D365`
+- **Token Contract**: [Blockscout](https://chain-20.evm-testnet-blockscout.chainweb.com/token/0x7EDfA2193d4c2664C9e0128Ae25Ae5c9eC72D365?tab=contract)
+- **Symbol**: TUSDC
 - **Decimals**: 6
-- **Initial Supply**: 1,000,000 TUSDC
+- **Type**: Custom ERC-20 test token for Kadena EVM testnet
 
-## 🔍 Block Explorer
+## 🎯 Supported Tokens
 
-View the contract on Blockscout: [Contract Details](https://chain-20.evm-testnet-blockscout.chainweb.com/address/0x7EDfA2193d4c2664C9e0128Ae25Ae5c9eC72D365)
+### Arbitrum Sepolia
+- **PayPal USD (PYUSD)**: `0x637A1259C6afd7E3AdF63993cA7E58BB438aB1B1`
+- **Circle USDC**: `0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d`
 
-## ✨ Features
+### Kadena Testnet
+- **TestnetUSDC (TUSDC)**: `0x7EDfA2193d4c2664C9e0128Ae25Ae5c9eC72D365`
+  - **Token Contract**: [Blockscout](https://chain-20.evm-testnet-blockscout.chainweb.com/token/0x7EDfA2193d4c2664C9e0128Ae25Ae5c9eC72D365?tab=contract)
+  - **Symbol**: TUSDC
+  - **Decimals**: 6
+  - **Type**: Custom test token for Kadena EVM testnet
 
-### Core ERC20 Features
-- ✅ Standard ERC20 functionality (transfer, approve, transferFrom)
-- ✅ ERC2612 Permit functionality for gasless transactions
-- ✅ Custom decimals support (6 decimals, like USDC)
+## 📋 Contract Features
 
-### Administrative Features
-- ✅ **Pausable**: Owner can pause/unpause all transfers
-- ✅ **Blacklisting**: Owner can blacklist/unblacklist addresses
-- ✅ **Minting**: Owner can mint new tokens
-- ✅ **Burning**: Users can burn their own tokens, owner can burn from any account
+The SlipstreamGaslessProxy contract enables:
 
-### Testing Features
-- ✅ **Faucet Function**: Anyone can request up to 10,000 TUSDC (for testing purposes)
-- ✅ **Initial Supply**: 1M tokens minted to deployer on creation
+- **Gasless Token Transfers**: Users can transfer tokens without paying gas fees
+- **ERC-2612 Permit Support**: Leverages permit functionality for seamless approvals
+- **Multi-Token Support**: Supports various ERC-20 tokens with permit functionality
+- **Relayer Network**: Decentralized relayer system for processing transactions
+- **Fee Management**: Configurable relayer fees for sustainable operations
+- **Nonce Management**: Prevents replay attacks with proper nonce handling
 
-## 🚀 Quick Start
+## 🛠️ Development Setup
 
 ### Prerequisites
-
-- Node.js v16 or higher
-- npm or yarn
-- EVM-compatible wallet (MetaMask recommended)
-- Testnet KDA tokens for gas fees
+- Node.js (v16 or higher)
+- Yarn or npm
+- Hardhat
+- Git
 
 ### Installation
 
 ```bash
 # Clone the repository
-git clone <your-repo-url>
+git clone <repository-url>
 cd slipstream-contract
 
 # Install dependencies
+yarn install
+# or
 npm install
-
-# Copy environment file and add your private key
-cp .env.example .env
-# Edit .env and add your DEPLOYER_PRIVATE_KEY
 ```
 
-### Compile Contract
+### Environment Setup
+
+Create a `.env` file in the root directory:
+
+```env
+# Deployer private key (without 0x prefix)
+DEPLOYER_PRIVATE_KEY=your_private_key_here
+
+# RPC URLs
+ARBITRUM_SEPOLIA_RPC_URL=https://sepolia-rollup.arbitrum.io/rpc
+KADENA_TESTNET_RPC_URL=https://evm-testnet.chainweb.com/chainweb/0.0/evm-testnet
+
+# Block Explorer API Keys (optional)
+ARBISCAN_API_KEY=your_arbiscan_api_key
+KADENA_BLOCKSCOUT_API_KEY=your_blockscout_api_key
+```
+
+## 🚀 Deployment
+
+### Deploy to Arbitrum Sepolia
 
 ```bash
-npm run compile
+yarn deploy-arbitrum
+# or
+npx hardhat run scripts/deploy-arbitrum-sepolia.js --network arbitrum_sepolia
 ```
 
-### Run Tests
+### Deploy to Kadena Testnet
 
 ```bash
-npm test
+yarn deploy-kadena
+# or
+npx hardhat run scripts/deploy-slipstream.js --chainweb
 ```
 
-### Deploy Contract
+### Deploy to Base Sepolia
 
 ```bash
-# Deploy using Kadena Hardhat plugin
-npm run deploy
-
-# Or deploy directly to kadena testnet
-npm run deploy-kadena
-```
-
-## 🔧 Contract Interaction
-
-### Adding to MetaMask
-
-1. **Add Kadena Chainweb EVM Testnet to MetaMask:**
-   - Network Name: `Kadena Chainweb EVM Testnet 20`
-   - RPC URL: `https://evm-testnet.chainweb.com/chainweb/0.0/evm-testnet/chain/20/evm/rpc`
-   - Chain ID: `5920`
-   - Currency Symbol: `KDA`
-   - Block Explorer: `https://chain-20.evm-testnet-blockscout.chainweb.com`
-
-2. **Add Token to MetaMask:**
-   - Token Contract Address: `0x7EDfA2193d4c2664C9e0128Ae25Ae5c9eC72D365`
-   - Token Symbol: `TUSDC`
-   - Token Decimals: `6`
-
-### Using the Faucet
-
-The contract includes a public faucet function for easy testing:
-
-```solidity
-// Request 1000 TUSDC tokens (anyone can call this)
-faucet(your_address, 1000000000); // 1000 tokens with 6 decimals
-```
-
-**Note**: Faucet is limited to 10,000 TUSDC per request.
-
-### Key Functions
-
-#### Public Functions
-```solidity
-// Standard ERC20
-transfer(to, amount)
-approve(spender, amount)
-transferFrom(from, to, amount)
-
-// Burn your own tokens
-burn(amount)
-
-// Faucet (testing only)
-faucet(to, amount) // Max 10,000 TUSDC per call
-
-// View functions
-balanceOf(account)
-isBlacklisted(account)
-```
-
-#### Owner-Only Functions
-```solidity
-// Minting
-mint(to, amount)
-
-// Blacklisting
-blacklist(account)
-unblacklist(account)
-
-// Pausing
-pause()
-unpause()
-
-// Burning from any account
-burnFrom(account, amount)
+yarn deploy-base
+# or
+npx hardhat run scripts/deploy-base-sepolia.js --network base_sepolia
 ```
 
 ## 🧪 Testing
 
-The contract includes comprehensive tests covering:
+Run the test suite:
 
-- ✅ Deployment and initialization
-- ✅ Standard ERC20 transfers
-- ✅ Blacklisting functionality
-- ✅ Faucet limits and functionality
-- ✅ Pausable features
-- ✅ Administrative functions
-
-Run tests with:
 ```bash
-npm test
+# Run all tests
+yarn test
+
+# Run specific test file
+yarn test test/Splitstream.test.js
+
+# Run tests with gas reporting
+yarn test --gas-report
 ```
 
-## 📄 Contract Source
+## 📁 Project Structure
 
-The main contract file is located at: `contracts/testUSDC.sol`
+```
+slipstream-contract/
+├── contracts/
+│   ├── splitstream.sol          # Main gasless proxy contract
+│   ├── testUSDC.sol             # Test USDC token for Kadena
+│   └── ERC20.sol                # ERC-20 interface
+├── scripts/
+│   ├── deploy-arbitrum-sepolia.js
+│   ├── deploy-base-sepolia.js
+│   ├── deploy-slipstream.js
+│   └── deploy-all-chains.js
+├── test/
+│   ├── Splitstream.test.js
+│   └── TestnetUSDC.test.js
+├── hardhat.config.js
+├── package.json
+└── README.md
+```
 
-Key dependencies:
-- OpenZeppelin Contracts v5.x
-- Solidity ^0.8.0
+## 🔧 Configuration
 
-## 🔐 Security Features
+### Network Configuration
 
-1. **Access Control**: Uses OpenZeppelin's `Ownable` for administrative functions
-2. **Pausable**: Can halt all transfers in emergency situations  
-3. **Blacklisting**: Prevents transfers from/to blacklisted addresses
-4. **Safe Math**: Built-in overflow protection in Solidity 0.8+
-5. **ERC2612 Permits**: Enables gasless approvals using signatures
+The project supports multiple networks:
 
-## ⚠️ Important Notes
+- **Arbitrum Sepolia**: Testnet for Arbitrum L2
+- **Base Sepolia**: Testnet for Base L2  
+- **Kadena Testnet**: Kadena's EVM-compatible testnet
 
-### For Production Use
-- Remove or restrict the `faucet()` function
-- Implement proper governance for admin functions
-- Consider using a multisig wallet for contract ownership
-- Audit the contract thoroughly
+### Token Configuration
 
-### Testnet Limitations
-- This is a testnet deployment for development and testing only
-- Tokens have no monetary value
-- The faucet function is included for easy testing
+Each deployment includes specific token addresses for the target network:
 
-## 🌐 Network Information
+- **Arbitrum Sepolia**: PYUSD and Circle USDC
+- **Kadena Testnet**: TestnetUSDC (custom test token)
 
-### Kadena Chainweb EVM Testnet Chain 20
-- **RPC URL**: https://evm-testnet.chainweb.com/chainweb/0.0/evm-testnet/chain/20/evm/rpc
-- **Chain ID**: 5920
-- **Block Explorer**: https://chain-20.evm-testnet-blockscout.chainweb.com
-- **Faucet**: https://developer.kadena.io/tools/faucet
+## 🔍 Verification
 
-### Gas Costs (Approximate)
-- Transfer: ~60,000 gas
-- Mint: ~60,000 gas
-- Blacklist: ~47,000 gas
-- Deploy: ~1,540,000 gas
+Contracts are automatically verified on block explorers after deployment:
 
-## 📚 Additional Resources
+- **Arbitrum Sepolia**: [Arbiscan](https://sepolia.arbiscan.io/)
+- **Kadena Testnet**: [Blockscout](https://chain-20.evm-testnet-blockscout.chainweb.com/)
 
-- [Kadena Documentation](https://docs.kadena.io/)
-- [Hardhat Documentation](https://hardhat.org/docs)
-- [OpenZeppelin Contracts](https://docs.openzeppelin.com/contracts)
-- [ERC20 Standard](https://eips.ethereum.org/EIPS/eip-20)
-- [ERC2612 Permits](https://eips.ethereum.org/EIPS/eip-2612)
+## 📊 Gas Usage
+
+| Contract | Network | Gas Used | Gas Price | Total Cost |
+|----------|---------|----------|-----------|------------|
+| SlipstreamGaslessProxy | Arbitrum Sepolia | 1,867,559 | ~0.1 gwei | ~0.0002 ETH |
 
 ## 🤝 Contributing
 
 1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests for new functionality
-5. Ensure all tests pass
-6. Submit a pull request
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🆘 Support
+
+For support and questions:
+
+- Create an issue in this repository
+- Join our Discord community
+- Check the documentation in the `/docs` folder
+
+## 🔗 Related Projects
+
+- [Slipstream Relayer](../slipstream-relayer/) - Backend relayer service
+- [Slipstream Frontend](../slipstream-frontend/) - Web interface
+- [Slipstream SDK](../slipstream-sdk/) - JavaScript SDK
 
 ---
 
-**⚠️ Disclaimer**: This is a testnet deployment for development purposes only. Do not use this contract with real funds on mainnet without proper security audits and modifications.
-
-- A simple Hardhat configuration file.
-- Foundry-compatible Solidity unit tests.
-- TypeScript integration tests using `mocha` and ethers.js
-- Examples demonstrating how to connect to different types of networks, including locally simulating OP mainnet.
-
-## Usage
-
-### Running Tests
-
-To run all the tests in the project, execute the following command:
-
-```shell
-npx hardhat test
-```
-
-You can also selectively run the Solidity or `mocha` tests:
-
-```shell
-npx hardhat test solidity
-npx hardhat test mocha
-```
-
-### Make a deployment to Sepolia
-
-This project includes an example Ignition module to deploy the contract. You can deploy this module to a locally simulated chain or to Sepolia.
-
-To run the deployment to a local chain:
-
-```shell
-npx hardhat ignition deploy ignition/modules/Counter.ts
-```
-
-To run the deployment to Sepolia, you need an account with funds to send the transaction. The provided Hardhat configuration includes a Configuration Variable called `SEPOLIA_PRIVATE_KEY`, which you can use to set the private key of the account you want to use.
-
-You can set the `SEPOLIA_PRIVATE_KEY` variable using the `hardhat-keystore` plugin or by setting it as an environment variable.
-
-To set the `SEPOLIA_PRIVATE_KEY` config variable using `hardhat-keystore`:
-
-```shell
-npx hardhat keystore set SEPOLIA_PRIVATE_KEY
-```
-
-After setting the variable, you can run the deployment with the Sepolia network:
-
-```shell
-npx hardhat ignition deploy --network sepolia ignition/modules/Counter.ts
-```
+**Note**: This is a testnet deployment. Do not use in production without proper security audits and mainnet deployment procedures.
